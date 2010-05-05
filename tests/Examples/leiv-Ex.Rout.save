@@ -1,0 +1,115 @@
+
+R version 2.10.1 (2009-12-14)
+Copyright (C) 2009 The R Foundation for Statistical Computing
+ISBN 3-900051-07-0
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "leiv"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('leiv')
+> 
+> assign(".oldSearch", search(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("leiv")
+> ### * leiv
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: leiv
+> ### Title: Bivariate Linear Errors-In-Variables Estimation
+> ### Aliases: leiv leiv-class leiv-package print,leiv-method
+> ###   plot,leiv,missing-method
+> ### Keywords: models regression
+> 
+> ### ** Examples
+> 
+> ## generate artificial data as in Zellner (1971, Table 5.1) 
+> set.seed(1123)
+> n <- 20
+> X <- rnorm(n, mean=5, sd=4) # true x
+> x <- X + rnorm(n, mean=0, sd=2) # observed x
+> Y <- 2 + X # true y
+> y <- Y + rnorm(n, mean=0, sd=1) # observed y
+> 
+> ## fit with default options
+> leiv1 <- leiv(y ~ x)
+> print(leiv1)
+
+Call:
+leiv(formula = y ~ x)
+
+Sufficient statistics:
+sample size      mean x      mean y  sample cor    sd ratio 
+         20       6.231       7.394      0.9148      0.9762 
+
+
+Prior type: Cauchy
+
+Slope Estimate: 0.9762
+
+Intercept Estimate: 1.311
+
+> plot(leiv1) # density plot
+> dev.new()
+> plot(leiv1,plotType="scatter")
+>   
+> ## use the sufficient statistics provided below Zellner (1971, Table 5.1)
+> ## to estimate the slope and intercept with 90% probability intervals
+> y1bar <- 5.587
+> y2bar <- 7.784
+> m11 <- 19.332
+> m22 <- 17.945
+> m12 <- 16.925
+> r <- m12/sqrt(m11*m22)
+> l <- sqrt(m22/m11)
+> print(leiv(n=20, cor=r, sdRatio=l,
++    xMean=y1bar, yMean=y2bar, probIntCalc=TRUE, level=0.9))
+
+Call:
+leiv(n = 20, cor = r, sdRatio = l, xMean = y1bar, yMean = y2bar,     probIntCalc = TRUE, level = 0.9)
+
+Sufficient statistics:
+sample size      mean x      mean y  sample cor    sd ratio 
+         20       5.587       7.784      0.9087      0.9635 
+
+
+Prior type: Cauchy
+
+Slope Estimate: 0.9635
+
+Intercept Estimate: 2.401
+
+Shortest 90 % probability intervals: 
+slope ( 0.7601, 1.1793 )
+intercept ( 1.195, 3.537 )
+
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cat("Time elapsed: ", proc.time() - get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  10.815 0.116 11.109 0 0 
+> grDevices::dev.off()
+postscript 
+         2 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

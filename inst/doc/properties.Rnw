@@ -1,0 +1,110 @@
+\documentclass[12pt,letterpaper]{article}
+
+\usepackage{graphicx}
+\usepackage{epstopdf}
+
+\title{Properties of the \texttt{leiv} Posterior Density}
+\author{David Leonard}
+
+\begin{document}
+
+\SweaveOpts{engine=R}
+%\VignetteIndexEntry{Illustrating leiv properties}
+
+\maketitle
+
+The \texttt{leiv} package produces a posterior density estimate of the slope in the bivariate linear errors-in-variables problem.  The method is exact when the true values and the errors are normally distributed.  The posterior density derives from a prior density that is noninformative on the variance parameters up to the fact that they are finite and, together with the slope parameter, determine the covariance matrix of the unobserved true values.  The posterior density depends on the data only through the correlation coefficient and ratio of standard deviations; it is invariant to interchange and scaling of the coordinates.  This vignette illustrates these properties using the data from the \texttt{leiv} help page.
+
+<<data>>=
+set.seed(1123)
+n <- 20
+X <- rnorm(n, mean=5, sd=4) # true x
+x <- X + rnorm(n, mean=0, sd=2) # observed x
+Y <- 2 + X # true y
+y <- Y + rnorm(n, mean=0, sd=1) # observed y
+@
+
+$X$ and $Y$ are the unobserved true values, and $x$ and $y$ are their measured values.  The \texttt{leiv} package provides a posterior density for the slope of $Y$ versus $X$.
+
+<<original>>=
+library(leiv)
+l0 <- leiv(y ~ x)
+print(l0)
+@
+
+The correlation coefficient and ratio of standard deviations are sufficient statistics for the posterior density of the slope.  (The means are additional sufficient statistics for the maximum likelihood estimate of the  intercept.)
+
+<<suffstats>>=
+r <- cor(x,y)
+l <- sd(y)/sd(x)
+xBar <- mean(x)
+yBar <- mean(y)
+
+l1 <- leiv(n=n, cor=r, sdRatio=l, xMean=xBar, yMean=yBar)
+f <- function(beta) l1@density(beta)
+@
+
+Figure \ref{suffstatsfig} shows a plot of the original posterior density overlaid with the posterior density derived from the sufficient statistics. 
+
+<<label=ssplot,fig=TRUE,include=FALSE>>=
+plot(l0)
+curve(f, add=TRUE, col="red", lty=2, lwd=2)
+@
+
+\begin{figure}[!ht]
+\begin{center}
+\includegraphics[width=0.75\columnwidth]{properties-ssplot}
+\caption{Posterior density of the slope derived directly from the data (solid black) and from the sufficient statistics (dashed red).}
+\label{suffstatsfig}
+\end{center}
+\end{figure}
+
+Under interchange of the coordinates, the slope transforms as $\beta \rightarrow 1/\beta$, and the density transforms as $p(\beta) \rightarrow p(1/\beta)/\beta^2$.
+
+<<interchange>>=
+l2 <- leiv(x ~ y) # slope is reciprocal slope of y vs. x
+g <- function(beta) l2@density(1/beta)/beta^2
+@
+
+Figure \ref{interchangefig} shows a plot of the original posterior density overlaid with the posterior density found by interchanging the coordinates. 
+
+<<label=iplot,fig=TRUE,include=FALSE>>=
+plot(l0)
+curve(g, add=TRUE, col="red", lty=2, lwd=2) 
+@
+
+\begin{figure}[!ht]
+\begin{center}
+\includegraphics[width=0.75\columnwidth]{properties-iplot}
+\caption{Posterior density of the slope derived directly from the data (solid black) and from the data with $x$ and $y$ interchanged (dashed red).}
+\label{interchangefig}
+\end{center}
+\end{figure}
+
+Under scaling of the $y$ coordinate such that $y \rightarrow c y$ where $c > 0$, the slope transforms as $\beta \rightarrow c \beta$, and the density transforms as $p(\beta) \rightarrow p(c \beta) c$.
+
+<<scaling>>=
+c <- 2
+cy <- c*y
+l3 <- leiv(cy ~ x) # slope is c times slope of y vs. x
+h <- function(beta) l3@density(c*beta)*c
+@
+
+Figure \ref{scalingfig} shows a plot of the original posterior density overlaid with the posterior density found by scaling the $y$ coordinate. 
+
+<<label=splot,fig=TRUE,include=FALSE>>=
+plot(l0)
+curve(h, add=TRUE, col="red", lty=2, lwd=2) 
+@
+
+\begin{figure}[!ht]
+\begin{center}
+\includegraphics[width=0.75\columnwidth]{properties-splot}
+\caption{Posterior density of the slope derived directly from the data (solid black) and from the data with rescaled $y$ (dashed red).}
+\label{scalingfig}
+\end{center}
+\end{figure}
+
+Invariance under scaling of the $x$ coordinate is illustrated the same way.
+
+\end{document}
