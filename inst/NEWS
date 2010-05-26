@@ -1,0 +1,14 @@
+
+		CHANGES IN VERSION 1.0-1
+
+
+BUG FIXES
+
+    o	leiv(n=n, cor=r, sdRatio=l) would fail if r = 0;
+	similarly, leiv(y~x) would fail if cor(x,y) = 0.
+
+    o	plot(l, plotType="scatter") would fail without explanation
+	if the leiv object l was generated using sufficient statistics
+	instead of data.
+
+    o   improved plotting of colinear cases.

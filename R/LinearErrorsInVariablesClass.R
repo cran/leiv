@@ -7,6 +7,16 @@
 # Author: David Leonard
 # Date: 26 April 2010
 
+# Date: 17 May 2010
+# fix error when leiv is called with cor=0
+
+# Date: 21 May 2010
+# fix error when leiv is called with zero covariance data
+# fix special handling of singular cases in plot method
+
+# Date: 26 May 2010
+# replace beta cdf with equivalent F cdf
+
 # utility function
 partitionIntegrate <- function(f,partition,rel.tol=.Machine$double.eps^0.25,abs.tol=rel.tol) {
 	# returns an integral calculated as the sum of integrals over a partition of the argument
@@ -111,7 +121,9 @@ function(formula, data, subset, n=NULL, cor=NULL, sdRatio=NULL, xMean=0, yMean=0
 		Sxy <- cov(x,y)
 		Sxx <- var(x)
 		Syy <- var(y)
-		cor <- Sxy/sqrt(Sxx*Syy)
+		if (Sxx > 0 && Syy > 0)	cor <- Sxy/sqrt(Sxx*Syy)
+		else if (Sxx > 0 || Syy > 0) cor <- 1
+		else stop ("requires n >= 2 distinct data points")
 		sdRatio <- sqrt(Syy/Sxx)
 		xMean <- mean(x)
 		yMean <- mean(y)
@@ -128,8 +140,8 @@ function(formula, data, subset, n=NULL, cor=NULL, sdRatio=NULL, xMean=0, yMean=0
 
 		# intermediates
 		v <- n-1
-		dm <- (v-1)/2
-		dp <- (v+1)/2
+		vp <- v+1
+		vm <- v-1
 		s <- sqrt((1-cor^2)/v)
 
 		I <- function(b,r) {
@@ -140,8 +152,8 @@ function(formula, data, subset, n=NULL, cor=NULL, sdRatio=NULL, xMean=0, yMean=0
 			else tPartition <- c(tLower,tUpper)
 			tIntegral <- partitionIntegrate(
 				function(t) {
-					z <- 1/(1+(tUpper+t-2*tLower)*(tUpper-t)/(t^2+v))
-					return(dt(t,v)*pbeta(z,dp,dm))
+					F <- vm/vp*(v+t^2)/(tUpper+t-2*tLower)/(tUpper-t)
+					return(dt(t,v)*pf(F,vp,vm))
 				},tPartition,rel.tol=rel.tol,abs.tol=abs.tol)
 			return(tIntegral)
 		}
@@ -169,7 +181,7 @@ function(formula, data, subset, n=NULL, cor=NULL, sdRatio=NULL, xMean=0, yMean=0
 		p0 <- function(b) prior(b)*J(b)
 
 		# normalized posterior density
-		if (cor==0) bb <- 0
+		if (cor==0) bb <- c(-1,1)
 		else {
 			bb <- c(cor,1/cor) # (bYX,bXY)
 			bb <- bb[order(bb)]
@@ -179,7 +191,8 @@ function(formula, data, subset, n=NULL, cor=NULL, sdRatio=NULL, xMean=0, yMean=0
 		p <- function(b) p0(b)/k0
 
 		# posterior median
-		bMedian <- p50(p,bb[1],bb[2])
+		if (cor==0) bMedian <- 0
+		else bMedian <- p50(p,bb[1],bb[2])
 	
 		# probability interval
 		if (probIntCalc) {
@@ -253,35 +266,46 @@ setMethod("plot",
 	function (x, plotType="density", xlim=NULL, ylim=NULL, xlab=NULL, ylab=NULL, col=NULL, lwd=NULL, ...) 
 	{
 		if (plotType=="scatter") {
-			if (length(x@x)>=2) {
-				xlab <- ifelse(is.null(xlab),"x",xlab)
-				ylab <- ifelse(is.null(ylab),"y",ylab)
-				col <- ifelse(is.null(col),"black",col)
-				lwd <- ifelse(is.null(lwd),1,lwd)
+			if (x@n < 2L) stop("requires n >= 2 data points")
+			else if (length(x@x)==0) stop("requires (x,y) data")
+			else {
+				if (is.null(xlab)) xlab <- "x"
+				if (is.null(ylab)) ylab <- "y"
+				if (is.null(col)) col <- "black"
+				if (is.null(lwd)) lwd <- 1
 				plot(x@x, x@y, xlim=xlim, ylim=ylim, xlab=xlab, ylab=ylab, ...)
-				abline(x@intercept, x@slope, col=col, lwd=lwd, ...)
-			} else stop("requires n >= 2 data points")
+				if (is.finite(x@slope)) abline(x@intercept, x@slope, col=col, lwd=lwd, ...)
+				else abline(v=x@xMean, col=col, lwd=lwd, ...)
+			}
 		} else {
-			if (is.null(xlim)||is.null(ylim)) {
-				bYX <- x@cor*x@sdRatio
-				bXY <- x@sdRatio/x@cor
-				bb <- c(bYX,bXY)
-				bb <- bb[order(bb)]
-				if (is.null(xlim))
-					xlim <- bb-20/sqrt(x@n)*(x@slope-bb)
-				if (is.null(ylim)) {
-					if (x@cor > -1 && x@cor < 1) {
-						ylim <- c(0,1.2*optimize(x@density,bb,maximum=TRUE)$objective)
-					} else {
-						ylim <- c(0,1.2)
+			if (is.infinite(x@slope)) stop("point mass at infinity")
+			else {
+				if (is.null(xlab)) xlab <- "slope"
+				if (is.null(ylab)) ylab <- "density"
+				if (is.null(col)) col <- "black"
+				if (x@cor > -1 && x@cor < 1) {
+					if (is.null(xlim) || is.null(ylim)) {
+						if (x@cor==0) {
+							if (is.null(xlim)) xlim <- c(-1,1)-20/sqrt(x@n)*(x@slope-c(-1,1))
+							if (is.null(ylim)) ylim <- c(0,1.2*optimize(x@density,xlim,maximum=TRUE)$objective)
+						} else {
+							bYX <- x@cor*x@sdRatio
+							bXY <- x@sdRatio/x@cor
+							bb <- c(bYX,bXY)
+							bb <- bb[order(bb)]
+							if (is.null(xlim)) xlim <- bb-20/sqrt(x@n)*(x@slope-bb)
+							if (is.null(ylim)) ylim <- c(0,1.2*optimize(x@density,bb,maximum=TRUE)$objective)
+						}
 					}
+					if (is.null(lwd)) lwd <- 2
+					plot(x@density, xlim=xlim, ylim=ylim, xlab=xlab, ylab=ylab, col=col, lwd=lwd, ...)
+				} else {
+					if (is.null(xlim)) xlim <- x@slope+c(-1,1)
+					if (is.null(ylim)) ylim <- c(0,1.2)
+					if (is.null(lwd)) lwd <- 1
+					plot(x=x@slope, y=1, xlim=xlim, ylim=ylim, xlab=xlab, ylab=ylab, col=col, lwd=lwd, ...)
 				}
 			}
-			xlab <- ifelse(is.null(xlab),"slope",xlab)
-			ylab <- ifelse(is.null(ylab),"density",ylab)
-			col <- ifelse(is.null(col),"black",col)
-			lwd <- ifelse(is.null(lwd),2,lwd)
-			plot(x@density, xlim=xlim, ylim=ylim, xlab=xlab, ylab=ylab, col=col, lwd=lwd, ...)
 		}
    		invisible(x)
 	}
