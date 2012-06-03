@@ -1,0 +1,11 @@
+da6c396c8606d611a37b0de5fe48438f *DESCRIPTION
+97c1abb0255addf2d883a34dee2529bf *NAMESPACE
+4eb714473aa174196efcbfe4960ddf91 *R/LinearErrorsInVariablesClass.R
+80aaafe8889882cb5e4cc9d3223fe58d *inst/CITATION
+f4e7f42a96fa9e501a7f076df4569de9 *inst/NEWS
+2eb90f6d79b779912b9f9781edf67c23 *inst/doc/properties.Rnw
+6e0273371e2d36523a3fdcaab9f29988 *inst/doc/properties.pdf
+a54dc14bbc67ac1e97713c8b45286ae4 *man/leiv-internal.Rd
+c3f46a8a1eb7f29f490a4fa86f1d0d18 *man/leiv.Rd
+6e259c8fd1716f3836b4358989ae0194 *tests/Examples/leiv-Ex.Rout.save
+2eb90f6d79b779912b9f9781edf67c23 *vignettes/properties.Rnw

@@ -15,4 +15,3 @@ citEntry(entry="Manual",
                year,
                "). leiv: Bivariate Linear Errors-In-Variables Estimation. ",
                vers, ".", sep=""))
-

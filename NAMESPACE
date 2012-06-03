@@ -1,0 +1,7 @@
+import(methods)
+import(stats)
+importFrom(graphics, plot, abline)
+
+exportClasses(leiv)
+exportMethods(plot, print)
+export(leiv)

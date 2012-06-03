@@ -1,4 +1,64 @@
 
+		CHANGES IN VERSION 2.0-5
+
+
+PERFORMANCE
+
+    o   numerical integrations use the built-in function integrate instead of
+	calling the underlying QUADPACK routines dqags and dqagi.
+
+
+
+		CHANGES IN VERSION 2.0-4
+
+
+BUG FIXES
+
+    o   repaired NAMESPACE omissions that prevented installation in R 2.13.
+
+
+
+		CHANGES IN VERSION 2.0-3
+
+
+PERFORMANCE
+
+    o   compatibility updates for R 2.14.
+
+
+
+		CHANGES IN VERSION 2.0-2
+
+
+DOCUMENTATION
+
+    o   complete reference to related publication.
+
+
+
+		CHANGES IN VERSION 2.0-1
+
+
+FEATURES
+
+    o   can use another leiv object as the prior density.
+
+BUG FIXES
+
+    o	posterior density normalization could fail without explanation
+	for nearly linear input data.
+
+    o	improved checking for exceptional inputs.
+
+PERFORMANCE
+
+    o	improved efficiency of numerical integrations with direct
+	calls to QUADPACK routines dqags and dqagi.
+
+    o	stabilized utility functions p50 and probInt.
+
+
+
 		CHANGES IN VERSION 1.0-1
 
 

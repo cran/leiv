@@ -1,7 +1,8 @@
 
-R version 2.10.1 (2009-12-14)
-Copyright (C) 2009 The R Foundation for Statistical Computing
+R version 2.15.0 (2012-03-30)
+Copyright (C) 2012 The R Foundation for Statistical Computing
 ISBN 3-900051-07-0
+Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
 You are welcome to redistribute it under certain conditions.
@@ -31,71 +32,74 @@ Type 'q()' to quit R.
 > 
 > ### Name: leiv
 > ### Title: Bivariate Linear Errors-In-Variables Estimation
-> ### Aliases: leiv leiv-class leiv-package print,leiv-method
+> ### Aliases: leiv leiv-class leiv-package print-methods print,ANY-method
+> ###   print,leiv-method plot-methods plot,ANY,ANY-method
 > ###   plot,leiv,missing-method
 > ### Keywords: models regression
 > 
 > ### ** Examples
 > 
-> ## generate artificial data as in Zellner (1971, Table 5.1) 
+> ## generate artificial data 
 > set.seed(1123)
 > n <- 20
 > X <- rnorm(n, mean=5, sd=4) # true x
-> x <- X + rnorm(n, mean=0, sd=2) # observed x
+> x <- X + rnorm(n, mean=0, sd=5) # observed x
 > Y <- 2 + X # true y
-> y <- Y + rnorm(n, mean=0, sd=1) # observed y
+> y <- Y + rnorm(n, mean=0, sd=3) # observed y
 > 
 > ## fit with default options
-> leiv1 <- leiv(y ~ x)
-> print(leiv1)
+> fit <- leiv(y ~ x)
+> print(fit)
 
 Call:
 leiv(formula = y ~ x)
 
 Sufficient statistics:
 sample size      mean x      mean y  sample cor    sd ratio 
-         20       6.231       7.394      0.9148      0.9762 
+         20       7.355       7.217       0.706      0.8496 
 
 
-Prior type: Cauchy
+Slope estimate: 0.8493
 
-Slope Estimate: 0.9762
+Intercept estimate: 0.9702
 
-Intercept Estimate: 1.311
-
-> plot(leiv1) # density plot
+> plot(fit) # density plot
 > dev.new()
-> plot(leiv1,plotType="scatter")
->   
-> ## use the sufficient statistics provided below Zellner (1971, Table 5.1)
-> ## to estimate the slope and intercept with 90% probability intervals
-> y1bar <- 5.587
-> y2bar <- 7.784
-> m11 <- 19.332
-> m22 <- 17.945
-> m12 <- 16.925
-> r <- m12/sqrt(m11*m22)
-> l <- sqrt(m22/m11)
-> print(leiv(n=20, cor=r, sdRatio=l,
-+    xMean=y1bar, yMean=y2bar, probIntCalc=TRUE, level=0.9))
+> plot(fit,plotType="scatter")
+> 
+> ## calculate a density to use as an informative prior density of
+> ## the scale invariant slope in a subsequent fit
+> fit0 <- leiv(n=10, cor=0.5, sdRatio=1.0)
+> print(fit0)
 
 Call:
-leiv(n = 20, cor = r, sdRatio = l, xMean = y1bar, yMean = y2bar,     probIntCalc = TRUE, level = 0.9)
+leiv(n = 10, cor = 0.5, sdRatio = 1)
 
 Sufficient statistics:
 sample size      mean x      mean y  sample cor    sd ratio 
-         20       5.587       7.784      0.9087      0.9635 
+         10           0           0         0.5           1 
 
 
-Prior type: Cauchy
+Slope estimate: 0.9158
 
-Slope Estimate: 0.9635
+Intercept estimate: 0
 
-Intercept Estimate: 2.401
+> 
+> ## refit the data using the informative prior density
+> fit1 <- leiv(y ~ x, prior=fit0, abs.tol=1e-6)
+> print(fit1)
 
-Shortest 90 % probability intervals: 
-slope ( 0.7601, 1.1793 )
-intercept ( 1.195, 3.537 )
+Call:
+leiv(formula = y ~ x, prior = fit0, abs.tol = 1e-06)
+
+Sufficient statistics:
+sample size      mean x      mean y  sample cor    sd ratio 
+         20       7.355       7.217       0.706      0.8496 
+
+
+Slope estimate: 0.8496
+
+Intercept estimate: 0.9686
 
 > 
 > 
@@ -103,10 +107,10 @@ intercept ( 1.195, 3.537 )
 > ### * <FOOTER>
 > ###
 > cat("Time elapsed: ", proc.time() - get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  10.815 0.116 11.109 0 0 
+Time elapsed:  0.419 0.006 0.434 0 0 
 > grDevices::dev.off()
-postscript 
-         2 
+pdf 
+  2 
 > ###
 > ### Local variables: ***
 > ### mode: outline-minor ***
