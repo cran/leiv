@@ -1,4 +1,14 @@
 
+		CHANGES IN VERSION 2.0-7
+
+
+BUG FIXES
+
+    o   repaired handling of metadata in the CITATION file so that citation
+	information can be read without the package being installed.
+
+
+
 		CHANGES IN VERSION 2.0-6
 
 

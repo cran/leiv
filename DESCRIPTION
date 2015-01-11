@@ -1,8 +1,8 @@
 Package: leiv
-Version: 2.0-6
+Version: 2.0-7
 Type: Package
-Title: Bivariate linear errors-in-variables estimation
-Date: 2014-03-04
+Title: Bivariate Linear Errors-In-Variables Estimation
+Date: 2015-01-11
 Authors@R: c(person("David", "Leonard", role = c("aut", "cre"),
 		email = "davidsleonard@outlook.com"))
 Maintainer: David Leonard <davidsleonard@outlook.com>
@@ -15,8 +15,8 @@ Description: Estimate the slope and intercept of a bivariate
 	coordinates.
 License: GPL (>= 2)
 URL: http://www.r-project.org
-Packaged: 2014-03-04 13:23:26 UTC; macuser
+Packaged: 2015-01-11 14:47:41 UTC; macuser
 Author: David Leonard [aut, cre]
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2014-03-04 15:37:32
+Date/Publication: 2015-01-11 16:53:08
